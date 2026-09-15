@@ -5,6 +5,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/OoTMM/multiplayer/client/internal/debuglog"
 	"github.com/OoTMM/multiplayer/client/internal/util"
 	"github.com/gofrs/flock"
 )
@@ -39,7 +40,7 @@ func launchDaemon() error {
 	return nil
 }
 
-func Connect() (*DaemonConn, error) {
+func Connect(log *debuglog.Logger) (*DaemonConn, error) {
 	/* Make sure the daemon is running */
 	err := ensureDaemonStarted()
 	if err != nil {
@@ -49,7 +50,7 @@ func Connect() (*DaemonConn, error) {
 	/* Fast track: try to connect to the daemon first */
 	conn, err := net.Dial("unix", daemonSocketPath)
 	if err == nil {
-		return createDaemonConn(conn), nil
+		return createDaemonConn(conn, log), nil
 	}
 
 	/* Loop until the daemon socket becomes available or a timeout occurs */
@@ -65,7 +66,7 @@ func Connect() (*DaemonConn, error) {
 				if err != nil {
 					return nil, err
 				}
-				return createDaemonConn(conn), nil
+				return createDaemonConn(conn, log), nil
 			}
 		}
 	}

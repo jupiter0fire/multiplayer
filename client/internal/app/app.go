@@ -9,6 +9,7 @@ import (
 
 	"github.com/OoTMM/multiplayer/client/internal/config"
 	"github.com/OoTMM/multiplayer/client/internal/daemon"
+	"github.com/OoTMM/multiplayer/client/internal/debuglog"
 	"github.com/OoTMM/multiplayer/client/internal/game"
 	"github.com/OoTMM/multiplayer/client/internal/ipc"
 	"github.com/OoTMM/multiplayer/shared/version"
@@ -28,7 +29,14 @@ func Run(ctx context.Context, conf *config.Config) error {
 		return fmt.Errorf("failed to extract game info: %w", err)
 	}
 
-	daemonConn, err := daemon.Connect()
+	/* Log the data that is sent to the daemon (and broadcast over the websocket) */
+	log, err := debuglog.Open(conf.Verbose, conf.LogFile)
+	if err != nil {
+		return fmt.Errorf("failed to open log file %s: %w", conf.LogFile, err)
+	}
+	defer log.Close()
+
+	daemonConn, err := daemon.Connect(log)
 	if err != nil {
 		return fmt.Errorf("failed to connect to daemon: %w", err)
 	}
@@ -67,6 +75,12 @@ func (app *App) displayInfo() {
 		fmt.Printf("%s%s%s\n", star, color.HiWhiteString(fmt.Sprintf("%-12s", "World ID: ")), color.HiCyanString("%x", app.info.WorldID))
 	}
 	fmt.Printf("%s%s%s\n", star, color.HiWhiteString(fmt.Sprintf("%-12s", "Mode: ")), color.HiCyanString("%s", modeStr))
+	if app.conf.Verbose {
+		fmt.Printf("%s%s%s\n", star, color.HiWhiteString(fmt.Sprintf("%-12s", "Debug: ")), color.HiCyanString("%s", "websocket data is printed to the console"))
+	}
+	if app.conf.LogFile != "" {
+		fmt.Printf("%s%s%s\n", star, color.HiWhiteString(fmt.Sprintf("%-12s", "Log file: ")), color.HiCyanString("%s", app.conf.LogFile))
+	}
 	fmt.Printf("\n")
 }
 

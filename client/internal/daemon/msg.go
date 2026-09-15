@@ -31,20 +31,27 @@ type Msg struct {
 	Self       *bool   `json:"self,omitempty"`
 }
 
-func sendMsg(conn net.Conn, msg *Msg) error {
+/*
+sendMsg serializes and sends a message. It returns the serialized payload so that
+callers can log exactly the data that was handed to the daemon.
+*/
+func sendMsg(conn net.Conn, msg *Msg) ([]byte, error) {
 	data, err := json.Marshal(msg)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	var header [4]byte
 	size := uint32(len(data))
 	binary.LittleEndian.PutUint32(header[:], size)
 	_, err = conn.Write(header[:])
 	if err != nil {
-		return err
+		return nil, err
 	}
 	_, err = conn.Write(data)
-	return err
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
 }
 
 func recvMsg(conn net.Conn) (*Msg, error) {
