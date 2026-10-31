@@ -24,7 +24,6 @@ func (d *DaemonConn) sendLoop() {
 			return
 		}
 
-		/* The daemon broadcasts exactly this payload to its websocket subscribers */
 		data, err := sendMsg(d.conn, msg)
 		if err != nil {
 			d.log.Logf("failed to send %s to daemon: %v", msg.Type, err)
