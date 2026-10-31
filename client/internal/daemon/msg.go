@@ -32,8 +32,8 @@ type Msg struct {
 }
 
 /*
-sendMsg serializes and sends a message. It returns the serialized payload so that
-callers can log exactly the data that was handed to the daemon.
+sendMsg serializes and sends a message. It returns the serialized payload so
+that callers can log it, including when a write fails.
 */
 func sendMsg(conn net.Conn, msg *Msg) ([]byte, error) {
 	data, err := json.Marshal(msg)
@@ -45,11 +45,11 @@ func sendMsg(conn net.Conn, msg *Msg) ([]byte, error) {
 	binary.LittleEndian.PutUint32(header[:], size)
 	_, err = conn.Write(header[:])
 	if err != nil {
-		return nil, err
+		return data, err
 	}
 	_, err = conn.Write(data)
 	if err != nil {
-		return nil, err
+		return data, err
 	}
 	return data, nil
 }

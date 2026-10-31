@@ -30,13 +30,13 @@ func Run(ctx context.Context, conf *config.Config) error {
 	}
 
 	/* Log the data that is sent to the daemon (and broadcast over the websocket) */
-	log, err := debuglog.Open(conf.Verbose, conf.LogFile)
+	dbgLog, err := debuglog.Open(conf.Verbose, conf.LogFile)
 	if err != nil {
 		return fmt.Errorf("failed to open log file %s: %w", conf.LogFile, err)
 	}
-	defer log.Close()
+	defer dbgLog.Close()
 
-	daemonConn, err := daemon.Connect(log)
+	daemonConn, err := daemon.Connect(dbgLog)
 	if err != nil {
 		return fmt.Errorf("failed to connect to daemon: %w", err)
 	}
